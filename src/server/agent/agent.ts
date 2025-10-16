@@ -176,26 +176,23 @@ const shouldAnalyzeVideo = (state: ResearchState) => {
 };
 
 export const createResearchGraph = () => {
-  const graph = new StateGraph({
+  return new StateGraph({
     stateSchema: ResearchStateAnnotation,
     input: ResearchInputAnnotation,
     output: ResearchOutputAnnotation,
-  });
-
-  graph.addNode("search_research", searchResearchNode);
-  graph.addNode("analyze_video", analyzeVideoNode);
-  graph.addNode("create_report", createReportNode);
-  graph.addNode("create_podcast", createPodcastNode);
-  graph.addEdge(START, "search_research");
-  graph.addConditionalEdges("search_research", shouldAnalyzeVideo, {
-    analyze_video: "analyze_video",
-    create_report: "create_report",
-  });
-  graph.addEdge("analyze_video", "create_report");
-  graph.addEdge("create_report", "create_podcast");
-  graph.addEdge("create_podcast", END);
-
-  return graph;
+  })
+    .addNode("search_research", searchResearchNode)
+    .addNode("analyze_video", analyzeVideoNode)
+    .addNode("create_report", createReportNode)
+    .addNode("create_podcast", createPodcastNode)
+    .addEdge(START, "search_research")
+    .addConditionalEdges("search_research", shouldAnalyzeVideo, {
+      analyze_video: "analyze_video",
+      create_report: "create_report",
+    })
+    .addEdge("analyze_video", "create_report")
+    .addEdge("create_report", "create_podcast")
+    .addEdge("create_podcast", END);
 };
 
 export const createCompiledGraph = () => {
