@@ -10,8 +10,13 @@
     "format": "biome format --write"
   },
   "dependencies": {
+    "@langchain/core": "^0.3.78",
+    "@langchain/google-genai": "^0.2.18",
+    "@langchain/langgraph": "^0.4.9",
+    "@langchain/langgraph-sdk": "^0.1.10",
     "@tavily/core": "^0.5.12",
     "exa-js": "^1.10.2",
+    "langchain": "^0.3.36",
     "nanoid": "^5.1.6",
     "next": "15.5.5",
     "react": "19.1.0",
