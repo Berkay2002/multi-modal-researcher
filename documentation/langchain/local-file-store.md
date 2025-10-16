@@ -1,0 +1,154 @@
+# LocalFileStore
+
+```{=mdx} theme={null}
+
+<Tip>
+**Compatibility**
+
+
+Only available on Node.js.
+
+</Tip>
+
+```
+
+This will help you get started with [LocalFileStore](/oss/javascript/integrations/stores). For detailed documentation of all LocalFileStore features and configurations head to the [API reference](https://api.js.langchain.com/classes/langchain.storage_file_system.LocalFileStore.html).
+
+## Overview
+
+The `LocalFileStore` is a wrapper around the `fs` module for storing data as key-value pairs.
+Each key value pair has its own file nested inside the directory passed to the `.fromPath` method.
+The file name is the key and inside contains the value of the key.
+
+```{=mdx} theme={null}
+
+<Info>
+**The path passed to the `.fromPath` must be a directory, not a file.**
+
+
+</Info>
+
+<Warning>
+**This file store can alter any text file in the provided directory and any subfolders.**
+
+Make sure that the path you specify when initializing the store is free of other files.
+
+</Warning>
+
+```
+
+### Integration details
+
+| Class                                                                                                    | Package                                                                              | Local | [PY support](https://python.langchain.com/docs/integrations/stores/file_system/) |                                        Downloads                                         |                                        Version                                        |
+| :------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------- | :---: | :------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------: |
+| [LocalFileStore](https://api.js.langchain.com/classes/langchain.storage_file_system.LocalFileStore.html) | [langchain](https://api.js.langchain.com/modules/langchain.storage_file_system.html) |  ✅   |                                        ✅                                        | ![NPM - Downloads](https://img.shields.io/npm/dm/langchain?style=flat-square&label=%20&) | ![NPM - Version](https://img.shields.io/npm/v/langchain?style=flat-square&label=%20&) |
+
+## Setup
+
+### Installation
+
+The LangChain `LocalFileStore` integration lives in the `langchain` package:
+
+```{=mdx} theme={null}
+
+import IntegrationInstallTooltip from "@mdx_components/integration_install_tooltip.mdx";
+<IntegrationInstallTooltip></IntegrationInstallTooltip>
+
+<Npm2Yarn>
+  langchain @langchain/core
+</Npm2Yarn>
+
+```
+
+## Instantiation
+
+Now we can instantiate our byte store:
+
+```typescript theme={null}
+import { LocalFileStore } from "@langchain/classic/storage/file_system";
+
+const kvStore = await LocalFileStore.fromPath("./messages");
+```
+
+Define an encoder and decoder for converting the data to `Uint8Array` and back:
+
+```typescript theme={null}
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+```
+
+## Usage
+
+You can set data under keys like this using the `mset` method:
+
+```typescript theme={null}
+await kvStore.mset([
+  ["key1", encoder.encode("value1")],
+  ["key2", encoder.encode("value2")],
+]);
+
+const results = await kvStore.mget(["key1", "key2"]);
+console.log(results.map((v) => decoder.decode(v)));
+```
+
+```output theme={null}
+[ 'value1', 'value2' ]
+```
+
+And you can delete data using the `mdelete` method:
+
+```typescript theme={null}
+await kvStore.mdelete(["key1", "key2"]);
+
+await kvStore.mget(["key1", "key2"]);
+```
+
+```output theme={null}
+[ undefined, undefined ]
+```
+
+## Yielding values
+
+If you want to get back all the keys you can call the `yieldKeys` method. Optionally, you can pass a key prefix to only get back keys which match that prefix.
+
+```typescript theme={null}
+import { LocalFileStore } from "@langchain/classic/storage/file_system";
+
+const kvStoreForYield = await LocalFileStore.fromPath("./messages");
+
+const encoderForYield = new TextEncoder();
+
+// Add some data to the store
+await kvStoreForYield.mset([
+  ["message:id:key1", encoderForYield.encode("value1")],
+  ["message:id:key2", encoderForYield.encode("value2")],
+]);
+
+const yieldedKeys = [];
+for await (const key of kvStoreForYield.yieldKeys("message:id:")) {
+  yieldedKeys.push(key);
+}
+
+console.log(yieldedKeys);
+```
+
+```output theme={null}
+[ 'message:id:key1', 'message:id:key2' ]
+```
+
+```typescript theme={null}
+import fs from "fs";
+
+// Cleanup
+await fs.promises.rm("./messages", { recursive: true, force: true });
+```
+
+## API reference
+
+For detailed documentation of all LocalFileStore features and configurations, head to the [API reference](https://api.js.langchain.com/classes/langchain_storage_file_system.LocalFileStore.html)
+
+---
+
+<Callout icon="pen-to-square" iconType="regular">
+  [Edit the source of this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/javascript/integrations/stores/file_system.mdx)
+</Callout>
