@@ -1,11 +1,14 @@
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import {
-  GoogleGenerativeAI,
   type GenerativeModel,
+  GoogleGenerativeAI,
   type ModelParams,
 } from "@google/generative-ai";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
-const API_KEY_ENV_KEYS: readonly string[] = ["GOOGLE_API_KEY", "GEMINI_API_KEY"];
+const API_KEY_ENV_KEYS: readonly string[] = [
+  "GOOGLE_API_KEY",
+  "GEMINI_API_KEY",
+];
 
 let generativeClient: GoogleGenerativeAI | null = null;
 
@@ -18,7 +21,7 @@ export const resolveGoogleApiKey = (): string => {
   }
 
   throw new Error(
-    "Missing Google API key. Set GOOGLE_API_KEY or GEMINI_API_KEY in the environment.",
+    "Missing Google API key. Set GOOGLE_API_KEY or GEMINI_API_KEY in the environment."
   );
 };
 
@@ -33,15 +36,13 @@ export const getGoogleClient = (): GoogleGenerativeAI => {
 export const createChatModel = (params: {
   model: string;
   temperature: number;
-}): ChatGoogleGenerativeAI => {
-  return new ChatGoogleGenerativeAI({
+}): ChatGoogleGenerativeAI =>
+  new ChatGoogleGenerativeAI({
     model: params.model,
     temperature: params.temperature,
     apiKey: resolveGoogleApiKey(),
     maxRetries: 2,
   });
-};
 
-export const getGenerativeModel = (params: ModelParams): GenerativeModel => {
-  return getGoogleClient().getGenerativeModel(params);
-};
+export const getGenerativeModel = (params: ModelParams): GenerativeModel =>
+  getGoogleClient().getGenerativeModel(params);

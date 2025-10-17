@@ -1,9 +1,9 @@
+import { Buffer } from "node:buffer";
 import type {
   Content,
   GenerateContentRequest,
   GenerationConfig,
 } from "@google/generative-ai";
-import { Buffer } from "node:buffer";
 import { Configuration } from "../configuration";
 import { writeWaveFile } from "./audio";
 import { createChatModel, getGenerativeModel } from "./google";
@@ -71,8 +71,8 @@ const sanitizeTopicForFilename = (topic: string): string => {
   return `research_podcast_${fallback.replace(/\s+/g, "_")}.wav`;
 };
 
-const buildPodcastPrompt = (args: PodcastDiscussionArgs): string => {
-  return [
+const buildPodcastPrompt = (args: PodcastDiscussionArgs): string =>
+  [
     `Create a natural, engaging podcast conversation between Dr. Sarah (research expert) and Mike (curious interviewer) about "${args.topic}".`,
     "",
     "Use this research content:",
@@ -98,15 +98,13 @@ const buildPodcastPrompt = (args: PodcastDiscussionArgs): string => {
     "Dr. Sarah: [explanation]",
     "[continue...]",
   ].join("\n");
-};
 
-const buildTtsPrompt = (script: string): string => {
-  return `TTS the following conversation between Mike and Dr. Sarah:\n${script}`;
-};
+const buildTtsPrompt = (script: string): string =>
+  `TTS the following conversation between Mike and Dr. Sarah:\n${script}`;
 
 const createAudioRequest = (
   prompt: string,
-  configuration: Configuration,
+  configuration: Configuration
 ): AudioGenerateContentRequest => {
   const generationConfig: AudioGenerationConfig = {
     responseModalities: ["AUDIO"],
@@ -155,7 +153,7 @@ const createAudioRequest = (
 
 const generatePodcastScript = async (
   args: PodcastDiscussionArgs,
-  configuration: Configuration,
+  configuration: Configuration
 ): Promise<string> => {
   const model = createChatModel({
     model: configuration.synthesisModel,
@@ -170,7 +168,7 @@ const generatePodcastScript = async (
 const generatePodcastAudio = async (
   script: string,
   filePath: string,
-  configuration: Configuration,
+  configuration: Configuration
 ): Promise<void> => {
   const model = getGenerativeModel({
     model: configuration.ttsModel,
@@ -180,7 +178,7 @@ const generatePodcastAudio = async (
   const response = await model.generateContent(request);
   const candidate = response.response.candidates?.[0];
   const part = candidate?.content?.parts?.find(
-    (item) => "inlineData" in item && item.inlineData?.data,
+    (item) => "inlineData" in item && item.inlineData?.data
   );
 
   const audioData = part?.inlineData?.data;
@@ -197,7 +195,7 @@ const generatePodcastAudio = async (
 };
 
 export const createPodcastDiscussion = async (
-  args: PodcastDiscussionArgs,
+  args: PodcastDiscussionArgs
 ): Promise<PodcastDiscussionResult> => {
   const configuration = args.configuration ?? new Configuration();
   const fileName = args.filename ?? sanitizeTopicForFilename(args.topic);
@@ -212,7 +210,7 @@ export const createPodcastDiscussion = async (
 };
 
 export const createResearchReport = async (
-  args: ResearchReportArgs,
+  args: ResearchReportArgs
 ): Promise<ResearchReportResult> => {
   const configuration = args.configuration ?? new Configuration();
   const model = createChatModel({

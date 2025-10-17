@@ -19,9 +19,9 @@ type ResolvedConfigurationOptions = Required<ConfigurationOptions>;
 type ConfigurationField = keyof ConfigurationOptions;
 
 const DEFAULTS: ResolvedConfigurationOptions = {
-  searchModel: "gemini-2.5-flash",
-  synthesisModel: "gemini-2.5-flash",
-  videoModel: "gemini-2.5-flash",
+  searchModel: "gemini-flash-latest",
+  synthesisModel: "gemini-flash-latest",
+  videoModel: "gemini-flash-latest",
   ttsModel: "gemini-2.5-flash-preview-tts",
   searchTemperature: 0,
   synthesisTemperature: 0.3,
@@ -63,7 +63,7 @@ const isIntegerField = (key: ConfigurationField): key is IntegerField =>
 const setResolvedValue = <K extends ConfigurationField>(
   target: Partial<ResolvedConfigurationOptions>,
   key: K,
-  value: ResolvedConfigurationOptions[K],
+  value: ResolvedConfigurationOptions[K]
 ) => {
   target[key] = value;
 };
@@ -108,9 +108,9 @@ export class Configuration {
   }
 
   static fromRunnableConfig(
-    config?: RunnableConfig<ConfigurationOptions>,
+    config?: RunnableConfig<ConfigurationOptions>
   ): Configuration {
-    if (!config || !config.configurable) {
+    if (!config?.configurable) {
       return Configuration.fromEnvironment();
     }
 
@@ -135,7 +135,7 @@ export class Configuration {
   }
 
   private static collectValues(
-    configurable: ConfigurationOptions,
+    configurable: ConfigurationOptions
   ): ConfigurationOptions {
     const values: Partial<ResolvedConfigurationOptions> = {};
 
@@ -145,10 +145,7 @@ export class Configuration {
         setResolvedValue(
           values,
           key,
-          Configuration.coerceValue(
-            key,
-            process.env[envKey] as string,
-          ),
+          Configuration.coerceValue(key, process.env[envKey] as string)
         );
         continue;
       }
@@ -166,7 +163,7 @@ export class Configuration {
 
   private static coerceValue(
     key: ConfigurationField,
-    value: unknown,
+    value: unknown
   ): ResolvedConfigurationOptions[ConfigurationField] {
     if (value === undefined || value === null) {
       return DEFAULTS[key];
@@ -177,15 +174,21 @@ export class Configuration {
     }
 
     if (typeof value === "number") {
-      return (isIntegerField(key) ? Math.trunc(value) : value) as ResolvedConfigurationOptions[ConfigurationField];
+      return (
+        isIntegerField(key) ? Math.trunc(value) : value
+      ) as ResolvedConfigurationOptions[ConfigurationField];
     }
 
     if (isIntegerField(key)) {
       const parsedInt = Number.parseInt(String(value), 10);
-      return (Number.isNaN(parsedInt) ? DEFAULTS[key] : parsedInt) as ResolvedConfigurationOptions[ConfigurationField];
+      return (
+        Number.isNaN(parsedInt) ? DEFAULTS[key] : parsedInt
+      ) as ResolvedConfigurationOptions[ConfigurationField];
     }
 
     const parsedFloat = Number.parseFloat(String(value));
-    return (Number.isFinite(parsedFloat) ? parsedFloat : DEFAULTS[key]) as ResolvedConfigurationOptions[ConfigurationField];
+    return (
+      Number.isFinite(parsedFloat) ? parsedFloat : DEFAULTS[key]
+    ) as ResolvedConfigurationOptions[ConfigurationField];
   }
 }

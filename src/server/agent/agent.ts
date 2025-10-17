@@ -1,5 +1,5 @@
-import type { RunnableConfig } from "@langchain/core/runnables";
 import type { Content } from "@google/generative-ai";
+import type { RunnableConfig } from "@langchain/core/runnables";
 import { END, START, StateGraph } from "@langchain/langgraph";
 import { Configuration, type ConfigurationOptions } from "./configuration";
 import { createPodcastDiscussion, createResearchReport } from "./utils/content";
@@ -8,8 +8,8 @@ import { createChatModel, getGenerativeModel } from "./utils/google";
 import {
   ResearchInputAnnotation,
   ResearchOutputAnnotation,
-  ResearchStateAnnotation,
   type ResearchState,
+  ResearchStateAnnotation,
 } from "./utils/state";
 
 const toNullable = (value: string): string | null => {
@@ -44,7 +44,7 @@ const inferMimeType = (rawUrl: string): string => {
 
 const buildGenerativeVideoRequest = (
   topic: string,
-  videoUrl: string,
+  videoUrl: string
 ): { contents: Content[] } => ({
   contents: [
     {
@@ -66,7 +66,7 @@ const buildGenerativeVideoRequest = (
 
 const searchResearchNode = async (
   state: ResearchState,
-  config?: RunnableConfig<ConfigurationOptions>,
+  config?: RunnableConfig<ConfigurationOptions>
 ) => {
   const configuration = Configuration.fromRunnableConfig(config);
   const model = createChatModel({
@@ -82,7 +82,7 @@ const searchResearchNode = async (
           googleSearchRetrieval: {},
         },
       ],
-    },
+    }
   );
 
   const { text, sourcesText } = extractGeminiResponse(response);
@@ -95,7 +95,7 @@ const searchResearchNode = async (
 
 const analyzeVideoNode = async (
   state: ResearchState,
-  config?: RunnableConfig<ConfigurationOptions>,
+  config?: RunnableConfig<ConfigurationOptions>
 ) => {
   const videoUrl = state.videoUrl;
   if (!videoUrl) {
@@ -120,7 +120,7 @@ const analyzeVideoNode = async (
     const parts = candidate?.content?.parts ?? [];
     const textSegments = parts
       .map((part) =>
-        "text" in part && typeof part.text === "string" ? part.text : "",
+        "text" in part && typeof part.text === "string" ? part.text : ""
       )
       .filter((segment) => segment.length > 0);
     videoSummary = textSegments.join("\n").trim();
@@ -133,7 +133,7 @@ const analyzeVideoNode = async (
 
 const createReportNode = async (
   state: ResearchState,
-  config?: RunnableConfig<ConfigurationOptions>,
+  config?: RunnableConfig<ConfigurationOptions>
 ) => {
   const configuration = Configuration.fromRunnableConfig(config);
   const { report, synthesis } = await createResearchReport({
@@ -153,7 +153,7 @@ const createReportNode = async (
 
 const createPodcastNode = async (
   state: ResearchState,
-  config?: RunnableConfig<ConfigurationOptions>,
+  config?: RunnableConfig<ConfigurationOptions>
 ) => {
   const configuration = Configuration.fromRunnableConfig(config);
   const { script, filename } = await createPodcastDiscussion({
@@ -171,12 +171,11 @@ const createPodcastNode = async (
   };
 };
 
-const shouldAnalyzeVideo = (state: ResearchState) => {
-  return state.videoUrl ? "analyze_video" : "create_report";
-};
+const shouldAnalyzeVideo = (state: ResearchState) =>
+  state.videoUrl ? "analyze_video" : "create_report";
 
-export const createResearchGraph = () => {
-  return new StateGraph({
+export const createResearchGraph = () =>
+  new StateGraph({
     stateSchema: ResearchStateAnnotation,
     input: ResearchInputAnnotation,
     output: ResearchOutputAnnotation,
@@ -193,8 +192,5 @@ export const createResearchGraph = () => {
     .addEdge("analyze_video", "create_report")
     .addEdge("create_report", "create_podcast")
     .addEdge("create_podcast", END);
-};
 
-export const createCompiledGraph = () => {
-  return createResearchGraph().compile();
-};
+export const createCompiledGraph = () => createResearchGraph().compile();

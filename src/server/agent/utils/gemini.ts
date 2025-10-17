@@ -1,9 +1,9 @@
-import type { AIMessage } from "@langchain/core/messages";
 import type {
   GroundingChunk,
   GroundingMetadata,
   GroundingSupport,
 } from "@google/generative-ai";
+import type { AIMessage } from "@langchain/core/messages";
 
 export type SourceSummary = {
   index: number;
@@ -32,49 +32,78 @@ type GroundingSupportLike = Partial<GroundingSupport> & {
   groundingChunkIndices?: number[];
 };
 
+/** Display & formatting constants (avoid magic numbers/strings inline) */
+const DISPLAY = {
+  ONE_BASED_INDEX_OFFSET: 1,
+  MAX_SNIPPET_CHARS: 100,
+  NEWLINE: "\n",
+  INDENT: "   ",
+  ELLIPSIS: "...",
+} as const;
+
+/** Length/sentinel constants */
+const LENGTH = {
+  EMPTY: 0,
+} as const;
+
+/** Fallback labels */
+const FALLBACK = {
+  TITLE: "No title",
+  URI: "No URI",
+} as const;
+
 const toSourceSummary = (
   chunk: GroundingChunkLike,
-  index: number,
+  index: number
 ): SourceSummary | null => {
   const title = chunk.web?.title ?? "";
   const uri = chunk.web?.uri ?? "";
 
-  if (!title && !uri) {
+  if (!(title || uri)) {
     return null;
   }
 
   return {
-    index: index + 1,
-    title: title || "No title",
-    uri: uri || "No URI",
+    index: index + DISPLAY.ONE_BASED_INDEX_OFFSET,
+    title: title || FALLBACK.TITLE,
+    uri: uri || FALLBACK.URI,
   };
 };
 
 const toSupportSummary = (
-  support: GroundingSupportLike,
+  support: GroundingSupportLike
 ): SupportSummary | null => {
   const indices =
     support.groundingChunkIndices ??
     support.groundingChunckIndices ??
     undefined;
-  if (!indices || indices.length === 0) {
+
+  if (!indices || indices.length === LENGTH.EMPTY) {
     return null;
   }
 
-  const snippetText = typeof support.segment === "string" ? support.segment : "";
+  const snippetText =
+    typeof support.segment === "string" ? support.segment : "";
   const trimmed = snippetText.trim();
   if (!trimmed) {
     return null;
   }
 
+  const snippet =
+    trimmed.length > DISPLAY.MAX_SNIPPET_CHARS
+      ? `${trimmed.slice(0, DISPLAY.MAX_SNIPPET_CHARS)}${DISPLAY.ELLIPSIS}`
+      : trimmed;
+
   return {
-    snippet: trimmed.length > 100 ? `${trimmed.slice(0, 100)}...` : trimmed,
-    sourceNumbers: indices.map((value) => value + 1),
+    snippet,
+    sourceNumbers: indices.map(
+      (value) => value + DISPLAY.ONE_BASED_INDEX_OFFSET
+    ),
   };
 };
 
 const extractGroundingMetadata = (
-  message: AIMessage,
+  message: AIMessage
 ): Partial<GroundingMetadata> | null => {
   const metadata = message.response_metadata;
   if (!metadata || typeof metadata !== "object") {
@@ -84,6 +113,7 @@ const extractGroundingMetadata = (
   const maybeGrounding =
     (metadata as { groundingMetadata?: Partial<GroundingMetadata> })
       .groundingMetadata ?? null;
+
   if (!maybeGrounding || typeof maybeGrounding !== "object") {
     return null;
   }
@@ -115,13 +145,13 @@ export const extractGeminiResponse = (message: AIMessage): GeminiExtraction => {
       .filter((entry): entry is SupportSummary => Boolean(entry)) ?? [];
 
   const sourcesText =
-    sources.length > 0
+    sources.length > LENGTH.EMPTY
       ? sources
           .map(
             (source) =>
-              `${source.index}. ${source.title}\n   ${source.uri}`,
+              `${source.index}. ${source.title}${DISPLAY.NEWLINE}${DISPLAY.INDENT}${source.uri}`
           )
-          .join("\n")
+          .join(DISPLAY.NEWLINE)
       : "";
 
   return {

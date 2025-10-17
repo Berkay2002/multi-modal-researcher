@@ -12,7 +12,7 @@ const nullableString = () =>
     default: () => null,
   });
 
-export const ResearchStateAnnotation = Annotation.Root({
+const researchStateSpec = {
   topic: Annotation<string>,
   videoUrl: nullableString(),
   searchText: nullableString(),
@@ -22,17 +22,19 @@ export const ResearchStateAnnotation = Annotation.Root({
   synthesisText: nullableString(),
   podcastScript: nullableString(),
   podcastFilename: nullableString(),
-});
+};
+
+export const ResearchStateAnnotation = Annotation.Root(researchStateSpec);
 
 export const ResearchInputAnnotation = Annotation.Root({
-  topic: Annotation<string>,
-  videoUrl: nullableString(),
+  topic: researchStateSpec.topic,
+  videoUrl: researchStateSpec.videoUrl,
 });
 
 export const ResearchOutputAnnotation = Annotation.Root({
-  report: nullableString(),
-  podcastScript: nullableString(),
-  podcastFilename: nullableString(),
+  report: researchStateSpec.report,
+  podcastScript: researchStateSpec.podcastScript,
+  podcastFilename: researchStateSpec.podcastFilename,
 });
 
 export type ResearchState = typeof ResearchStateAnnotation.State;

@@ -76,7 +76,7 @@ Now we can instantiate our model object and generate chat completions:
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
 const llm = new ChatGoogleGenerativeAI({
-  model: "gemini-1.5-pro",
+  model: "gemini-2.5-pro",
   temperature: 0,
   maxRetries: 2,
   // other params...
@@ -170,7 +170,7 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
 
 const llmWithSafetySettings = new ChatGoogleGenerativeAI({
-  model: "gemini-1.5-pro",
+  model: "gemini-2.5-pro",
   temperature: 0,
   safetySettings: [
     {
@@ -264,7 +264,7 @@ const searchRetrievalTool: GoogleSearchRetrievalTool = {
   },
 };
 const searchRetrievalModel = new ChatGoogleGenerativeAI({
-  model: "gemini-1.5-pro",
+  model: "gemini-2.5-pro",
   temperature: 0,
   maxRetries: 0,
 }).bindTools([searchRetrievalTool]);
@@ -466,7 +466,7 @@ const codeExecutionTool: CodeExecutionTool = {
   codeExecution: {}, // Simply pass an empty object to enable it.
 };
 const codeExecutionModel = new ChatGoogleGenerativeAI({
-  model: "gemini-1.5-pro",
+  model: "gemini-2.5-pro",
   temperature: 0,
   maxRetries: 0,
 }).bindTools([codeExecutionTool]);
@@ -580,7 +580,7 @@ const fileResult = await fileManager.uploadFile(pathToVideoFile, {
 
 // creates cached content AFTER uploading is finished
 const cachedContent = await cacheManager.create({
-  model: "models/gemini-1.5-flash-001",
+  model: "models/gemini-2.5-flash-001",
   displayName: displayName,
   systemInstruction:
     "You are an expert video analyzer, and your job is to answer " +
@@ -611,7 +611,7 @@ await model.invoke("Summarize the video");
 
 **Note**
 
-- Context caching supports both Gemini 1.5 Pro and Gemini 1.5 Flash. Context caching is only available for stable models with fixed versions (for example, gemini-1.5-pro-001). You must include the version postfix (for example, the -001 in gemini-1.5-pro-001).
+- Context caching supports both Gemini 1.5 Pro and Gemini 1.5 Flash. Context caching is only available for stable models with fixed versions (for example, gemini-2.5-pro-001). You must include the version postfix (for example, the -001 in gemini-2.5-pro-001).
 - The minimum input token count for context caching is 32,768, and the maximum is the same as the maximum for the given model.
 
 ## Gemini Prompting FAQs

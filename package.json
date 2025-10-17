@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "dev:langgraph": "npx langgraphjs dev --config ./langgraph.json",
+    "dev:langgraph": "npx @langchain/langgraph-cli dev",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "biome check",
