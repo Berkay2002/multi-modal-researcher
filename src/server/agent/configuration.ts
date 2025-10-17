@@ -15,9 +15,10 @@ export type ConfigurationOptions = {
   ttsSampleWidth?: number;
 };
 
+type ResolvedConfigurationOptions = Required<ConfigurationOptions>;
 type ConfigurationField = keyof ConfigurationOptions;
 
-const DEFAULTS: Required<ConfigurationOptions> = {
+const DEFAULTS: ResolvedConfigurationOptions = {
   searchModel: "gemini-2.5-flash",
   synthesisModel: "gemini-2.5-flash",
   videoModel: "gemini-2.5-flash",
@@ -58,6 +59,14 @@ const isNumericField = (key: ConfigurationField): key is NumericField =>
 
 const isIntegerField = (key: ConfigurationField): key is IntegerField =>
   integerFieldSet.has(key);
+
+const setResolvedValue = <K extends ConfigurationField>(
+  target: Partial<ResolvedConfigurationOptions>,
+  key: K,
+  value: ResolvedConfigurationOptions[K],
+) => {
+  target[key] = value;
+};
 
 /**
  * Utility class mirroring the Python {@code Configuration} dataclass.
@@ -110,7 +119,7 @@ export class Configuration {
   }
 
   static fromEnvironment(): Configuration {
-    const envValues: ConfigurationOptions = {};
+    const envValues: Partial<ResolvedConfigurationOptions> = {};
 
     for (const key of Object.keys(DEFAULTS) as ConfigurationField[]) {
       const envKey = key.toUpperCase();
@@ -119,7 +128,7 @@ export class Configuration {
         continue;
       }
 
-      envValues[key] = Configuration.coerceValue(key, raw); // TODO: Fix "Type 'string | number | undefined' is not assignable to type 'undefined'.
+      setResolvedValue(envValues, key, Configuration.coerceValue(key, raw));
     }
 
     return new Configuration(envValues);
@@ -128,14 +137,18 @@ export class Configuration {
   private static collectValues(
     configurable: ConfigurationOptions,
   ): ConfigurationOptions {
-    const values: ConfigurationOptions = {};
+    const values: Partial<ResolvedConfigurationOptions> = {};
 
     for (const key of Object.keys(DEFAULTS) as ConfigurationField[]) {
       const envKey = key.toUpperCase();
       if (process.env[envKey] !== undefined) {
-        values[key] = Configuration.coerceValue( // TODO: Fix "Type 'string | number | undefined' is not assignable to type 'undefined'.
+        setResolvedValue(
+          values,
           key,
-          process.env[envKey] as string,
+          Configuration.coerceValue(
+            key,
+            process.env[envKey] as string,
+          ),
         );
         continue;
       }
@@ -145,7 +158,7 @@ export class Configuration {
         continue;
       }
 
-      values[key] = Configuration.coerceValue(key, maybeValue); // TODO: Fix "Type 'string | number | undefined' is not assignable to type 'undefined'.
+      setResolvedValue(values, key, Configuration.coerceValue(key, maybeValue));
     }
 
     return values;
@@ -154,7 +167,7 @@ export class Configuration {
   private static coerceValue(
     key: ConfigurationField,
     value: unknown,
-  ): ConfigurationOptions[ConfigurationField] {
+  ): ResolvedConfigurationOptions[ConfigurationField] {
     if (value === undefined || value === null) {
       return DEFAULTS[key];
     }
@@ -164,15 +177,15 @@ export class Configuration {
     }
 
     if (typeof value === "number") {
-      return (isIntegerField(key) ? Math.trunc(value) : value) as ConfigurationOptions[ConfigurationField];
+      return (isIntegerField(key) ? Math.trunc(value) : value) as ResolvedConfigurationOptions[ConfigurationField];
     }
 
     if (isIntegerField(key)) {
       const parsedInt = Number.parseInt(String(value), 10);
-      return (Number.isNaN(parsedInt) ? DEFAULTS[key] : parsedInt) as ConfigurationOptions[ConfigurationField];
+      return (Number.isNaN(parsedInt) ? DEFAULTS[key] : parsedInt) as ResolvedConfigurationOptions[ConfigurationField];
     }
 
     const parsedFloat = Number.parseFloat(String(value));
-    return (Number.isFinite(parsedFloat) ? parsedFloat : DEFAULTS[key]) as ConfigurationOptions[ConfigurationField];
+    return (Number.isFinite(parsedFloat) ? parsedFloat : DEFAULTS[key]) as ResolvedConfigurationOptions[ConfigurationField];
   }
 }
