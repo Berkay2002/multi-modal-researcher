@@ -2,6 +2,13 @@ import { Annotation } from "@langchain/langgraph";
 
 const nullableString = () =>
   Annotation<string | null>({
+    reducer: (current, next) => {
+      if (next === null && current === null) {
+        return null;
+      }
+
+      return next;
+    },
     default: () => null,
   });
 
